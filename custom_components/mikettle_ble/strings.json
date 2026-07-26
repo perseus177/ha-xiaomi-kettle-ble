@@ -1,0 +1,187 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "bluetooth_confirm": {
+        "title": "Mi Kettle discovered",
+        "description": "Add kettle **{name}** ({model}) at address {address}?\n\n**Token:** if left empty, a new one is generated and the kettle gets paired to Home Assistant — the official Xiaomi app then loses access until you enter its token here. Get the kettle's token from the Mi Home cloud using Xiaomi-cloud-tokens-extractor (24 hex characters). Leave it empty if you will not use the app.",
+        "data": {
+          "token": "Mi Home token (24 hex characters, optional)"
+        }
+      },
+      "user": {
+        "title": "Mi Kettle",
+        "description": "Pick the kettle from the list of visible Bluetooth devices, or type its MAC address. The kettle must be on its base to be listed. The model must match the kettle exactly (MODEL from Xiaomi-cloud-tokens-extractor, or characteristic 2a24) — a wrong model fails with ATT 0x0E.",
+        "data": {
+          "address": "Bluetooth device",
+          "product_id": "Model (product ID)",
+          "token": "Mi Home token (24 hex characters; empty = new one, the app loses access)"
+        }
+      },
+      "reconfigure": {
+        "title": "Mi Kettle — reconfigure",
+        "description": "Change the Bluetooth address, the model or the token. Leave the token empty to keep the current one. The model must match the kettle exactly (MODEL from Xiaomi-cloud-tokens-extractor, or characteristic 2a24) — a wrong model fails with ATT 0x0E.",
+        "data": {
+          "address": "Bluetooth device",
+          "product_id": "Model (product ID)",
+          "token": "Mi Home token (24 hex characters; empty = keep current)"
+        }
+      }
+    },
+    "error": {
+      "invalid_token": "The token must be exactly 24 hexadecimal characters (12 bytes).",
+      "invalid_address": "Invalid MAC address. Expected format AA:BB:CC:DD:EE:FF."
+    },
+    "abort": {
+      "already_configured": "This kettle is already configured.",
+      "not_supported": "This Xiaomi device is not a supported kettle.",
+      "reconfigure_successful": "Reconfiguration was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "MiKettle BLE options",
+        "description": "Polling interval in minutes. 0 = do not poll (recommended) — the kettle accepts only one Bluetooth connection at a time, so polling can block the official Xiaomi app.",
+        "data": {
+          "poll_interval": "Polling interval (minutes, 0 = off)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "keep_warm_temperature": {
+        "name": "Keep warm temperature"
+      },
+      "keep_warm_time_limit": {
+        "name": "Keep warm time limit"
+      }
+    },
+    "select": {
+      "keep_warm_type": {
+        "name": "Keep warm mode",
+        "state": {
+          "cool_down": "Cool down to the set temperature",
+          "warm_up": "Warm up to the set temperature"
+        }
+      },
+      "preset": {
+        "name": "Temperature preset",
+        "state": {
+          "p90": "90 °C – coffee",
+          "p80": "80 °C – white tea",
+          "p70": "70 °C – rice flour",
+          "p50": "50 °C – milk",
+          "p40": "40 °C – probiotics"
+        }
+      }
+    },
+    "switch": {
+      "turn_off_after_boil": {
+        "name": "Turn off after boil"
+      },
+      "ble_pause": {
+        "name": "Bluetooth pause (do not connect)"
+      }
+    },
+    "sensor": {
+      "current_temperature": {
+        "name": "Water temperature"
+      },
+      "target_temperature": {
+        "name": "Target temperature"
+      },
+      "action": {
+        "name": "Action",
+        "state": {
+          "idle": "Idle",
+          "heating": "Heating",
+          "cooling": "Cooling",
+          "keep_warm": "Keeping warm"
+        }
+      },
+      "mode": {
+        "name": "Mode",
+        "state": {
+          "none": "None",
+          "boil": "Boil",
+          "keep_warm": "Keep warm"
+        }
+      },
+      "keep_warm_elapsed": {
+        "name": "Keep warm elapsed"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Refresh state"
+      },
+      "dump_characteristics": {
+        "name": "Dump characteristics to log"
+      }
+    }
+  },
+  "services": {
+    "probe_characteristic": {
+      "name": "Probe characteristic",
+      "description": "Subscribes to notifications of a Bluetooth characteristic and optionally writes bytes to it. Without a payload this is a safe read; with a payload it is a deliberate experiment on a live appliance.",
+      "fields": {
+        "characteristic": {
+          "name": "Characteristic",
+          "description": "Short form (for example aa03) or the full UUID."
+        },
+        "payload": {
+          "name": "Payload (hex)",
+          "description": "For example 00 or 01. Empty = listen only."
+        },
+        "listen_seconds": {
+          "name": "Listen for",
+          "description": "How long to wait for notifications."
+        },
+        "entry_id": {
+          "name": "Entry ID",
+          "description": "Only needed when more than one kettle is configured."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "ble_paused": {
+      "message": "Bluetooth pause is on — turn it off to let Home Assistant access the kettle."
+    },
+    "not_in_range": {
+      "message": "Kettle {address} is not in range (or it is off its base and not advertising)."
+    },
+    "device_busy": {
+      "message": "Kettle {address} refused the connection — it is most likely busy (is the Xiaomi app connected?) or off its base. Try again in half a minute. Details: {details}"
+    },
+    "auth_failed": {
+      "message": "Authentication with kettle {address} failed — check the configured model (product ID). Details: {details}"
+    },
+    "communication_failed": {
+      "message": "Communication with kettle {address} failed: {details}"
+    },
+    "refresh_failed": {
+      "message": "Reading the kettle state failed: {details}"
+    },
+    "invalid_value": {
+      "message": "Invalid value: {details}"
+    },
+    "unknown_keep_warm_type": {
+      "message": "The current keep warm mode is unknown — put the kettle on its base, press Refresh state, then try again."
+    },
+    "unknown_target_temperature": {
+      "message": "The current target temperature is unknown — put the kettle on its base, press Refresh state, then try again."
+    },
+    "no_kettle_loaded": {
+      "message": "No MiKettle BLE kettle is loaded."
+    },
+    "multiple_kettles": {
+      "message": "More than one kettle is configured — pass entry_id."
+    },
+    "invalid_payload": {
+      "message": "The payload must be hexadecimal: {payload}"
+    }
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "bluetooth_confirm": {
+        "title": "Nájdená kanvica Mi Kettle",
+        "description": "Pridať kanvicu **{name}** ({model}) s adresou {address}?\n\n**Token:** ak ho necháte prázdny, vygeneruje sa nový a kanvica sa spáruje s Home Assistantom — oficiálna Xiaomi appka potom stratí prístup, kým jej token nevložíte sem. Token kanvice získate z Mi Home cloudu pomocou Xiaomi-cloud-tokens-extractor (24 hex znakov). Ak appku používať nebudete, pole nechajte prázdne.",
+        "data": {
+          "token": "Token z Mi Home (24 hex znakov, nepovinné)"
+        }
+      },
+      "user": {
+        "title": "Mi Kettle",
+        "description": "Vyberte kanvicu zo zoznamu viditeľných Bluetooth zariadení, alebo napíšte jej MAC adresu. Aby bola v zozname, musí byť na podstavci. Model musí presne zodpovedať kanvici (MODEL z Xiaomi-cloud-tokens-extractor alebo charakteristika 2a24) — nesprávny model skončí chybou ATT 0x0E.",
+        "data": {
+          "address": "Bluetooth zariadenie",
+          "product_id": "Model (product ID)",
+          "token": "Token z Mi Home (24 hex znakov; prázdne = nový, appka stratí prístup)"
+        }
+      },
+      "reconfigure": {
+        "title": "Mi Kettle — zmena nastavenia",
+        "description": "Zmeňte Bluetooth adresu, model alebo token. Token nechajte prázdny, ak chcete ponechať pôvodný. Model musí presne zodpovedať kanvici (MODEL z Xiaomi-cloud-tokens-extractor alebo charakteristika 2a24) — nesprávny model skončí chybou ATT 0x0E.",
+        "data": {
+          "address": "Bluetooth zariadenie",
+          "product_id": "Model (product ID)",
+          "token": "Token z Mi Home (24 hex znakov; prázdne = ponechať pôvodný)"
+        }
+      }
+    },
+    "error": {
+      "invalid_token": "Token musí mať presne 24 hexadecimálnych znakov (12 bajtov).",
+      "invalid_address": "Neplatná MAC adresa. Očakávaný formát AA:BB:CC:DD:EE:FF."
+    },
+    "abort": {
+      "already_configured": "Táto kanvica je už pridaná.",
+      "not_supported": "Toto Xiaomi zariadenie nie je podporovaná kanvica.",
+      "reconfigure_successful": "Nastavenie bolo zmenené."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Nastavenia MiKettle BLE",
+        "description": "Interval dopytovania v minútach. 0 = nedopytovať (odporúčané) — kanvica dovolí len jedno Bluetooth spojenie naraz, takže pravidelné dopytovanie môže blokovať oficiálnu Xiaomi appku.",
+        "data": {
+          "poll_interval": "Interval dopytovania (minúty, 0 = vypnuté)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "number": {
+      "keep_warm_temperature": {
+        "name": "Teplota udržiavania tepla"
+      },
+      "keep_warm_time_limit": {
+        "name": "Limit udržiavania tepla"
+      }
+    },
+    "select": {
+      "keep_warm_type": {
+        "name": "Režim udržiavania tepla",
+        "state": {
+          "cool_down": "Zovrieť a vychladnúť na teplotu",
+          "warm_up": "Ohriať na teplotu"
+        }
+      },
+      "preset": {
+        "name": "Predvoľba teploty",
+        "state": {
+          "p90": "90 °C – káva",
+          "p80": "80 °C – biely čaj",
+          "p70": "70 °C – rýžová múka",
+          "p50": "50 °C – mlieko",
+          "p40": "40 °C – probiotiká"
+        }
+      }
+    },
+    "switch": {
+      "turn_off_after_boil": {
+        "name": "Vypnúť po zovretí"
+      },
+      "ble_pause": {
+        "name": "Bluetooth pauza (nepripájať sa)"
+      }
+    },
+    "sensor": {
+      "current_temperature": {
+        "name": "Teplota vody"
+      },
+      "target_temperature": {
+        "name": "Nastavená teplota"
+      },
+      "action": {
+        "name": "Činnosť",
+        "state": {
+          "idle": "Nečinná",
+          "heating": "Hreje",
+          "cooling": "Chladne",
+          "keep_warm": "Udržiava teplo"
+        }
+      },
+      "mode": {
+        "name": "Režim",
+        "state": {
+          "none": "Žiadny",
+          "boil": "Var",
+          "keep_warm": "Udržiavanie tepla"
+        }
+      },
+      "keep_warm_elapsed": {
+        "name": "Udržiavanie tepla trvá"
+      }
+    },
+    "button": {
+      "refresh": {
+        "name": "Obnoviť stav"
+      },
+      "dump_characteristics": {
+        "name": "Vypísať charakteristiky do logu"
+      }
+    }
+  },
+  "services": {
+    "probe_characteristic": {
+      "name": "Diagnostika charakteristiky",
+      "description": "Odoberá notifikácie zadanej Bluetooth charakteristiky a voliteľne do nej zapíše bajty. Bez payloadu je to bezpečné čítanie; s payloadom ide o vedomý experiment na živom spotrebiči.",
+      "fields": {
+        "characteristic": {
+          "name": "Charakteristika",
+          "description": "Skrátený zápis (napríklad aa03) alebo plné UUID."
+        },
+        "payload": {
+          "name": "Payload (hex)",
+          "description": "Napríklad 00 alebo 01. Prázdne = iba počúvať."
+        },
+        "listen_seconds": {
+          "name": "Počúvať",
+          "description": "Ako dlho čakať na notifikácie."
+        },
+        "entry_id": {
+          "name": "Entry ID",
+          "description": "Potrebné len ak je pridaná viac ako jedna kanvica."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "ble_paused": {
+      "message": "Bluetooth pauza je zapnutá — vypnite ju, ak má Home Assistant ku kanvici pristupovať."
+    },
+    "not_in_range": {
+      "message": "Kanvica {address} nie je v dosahu (alebo nie je na podstavci a nevysiela)."
+    },
+    "device_busy": {
+      "message": "Kanvica {address} neprijala spojenie — je pravdepodobne obsadená (je pripojená Xiaomi appka?) alebo nie je na podstavci. Skúste to o pol minúty. Detail: {details}"
+    },
+    "auth_failed": {
+      "message": "Autentifikácia s kanvicou {address} zlyhala — skontrolujte nastavený model (product ID). Detail: {details}"
+    },
+    "communication_failed": {
+      "message": "Komunikácia s kanvicou {address} zlyhala: {details}"
+    },
+    "refresh_failed": {
+      "message": "Načítanie stavu kanvice zlyhalo: {details}"
+    },
+    "invalid_value": {
+      "message": "Neplatná hodnota: {details}"
+    },
+    "unknown_keep_warm_type": {
+      "message": "Aktuálny režim udržiavania tepla nie je známy — dajte kanvicu na podstavec, stlačte Obnoviť stav a skúste to znova."
+    },
+    "unknown_target_temperature": {
+      "message": "Aktuálna nastavená teplota nie je známa — dajte kanvicu na podstavec, stlačte Obnoviť stav a skúste to znova."
+    },
+    "no_kettle_loaded": {
+      "message": "Nie je načítaná žiadna kanvica MiKettle BLE."
+    },
+    "multiple_kettles": {
+      "message": "Je pridaná viac ako jedna kanvica — zadajte entry_id."
+    },
+    "invalid_payload": {
+      "message": "Payload musí byť hexadecimálny: {payload}"
+    }
+  }
+}

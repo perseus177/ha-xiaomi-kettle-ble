@@ -1,0 +1,25 @@
+probe_characteristic:
+  fields:
+    characteristic:
+      required: true
+      example: aa03
+      selector:
+        text:
+    payload:
+      required: false
+      example: "00"
+      selector:
+        text:
+    listen_seconds:
+      required: false
+      default: 3
+      selector:
+        number:
+          min: 0
+          max: 15
+          step: 0.5
+          unit_of_measurement: s
+    entry_id:
+      required: false
+      selector:
+        text:

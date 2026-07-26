@@ -1,0 +1,50 @@
+{
+  "entity": {
+    "number": {
+      "keep_warm_temperature": {
+        "default": "mdi:thermometer-water"
+      },
+      "keep_warm_time_limit": {
+        "default": "mdi:timer-sand"
+      }
+    },
+    "select": {
+      "keep_warm_type": {
+        "default": "mdi:kettle-steam"
+      },
+      "preset": {
+        "default": "mdi:thermometer-lines"
+      }
+    },
+    "switch": {
+      "turn_off_after_boil": {
+        "default": "mdi:kettle-off",
+        "state": {
+          "off": "mdi:kettle"
+        }
+      },
+      "ble_pause": {
+        "default": "mdi:bluetooth",
+        "state": {
+          "on": "mdi:bluetooth-off"
+        }
+      }
+    },
+    "sensor": {
+      "keep_warm_elapsed": {
+        "default": "mdi:clock-outline"
+      }
+    },
+    "button": {
+      "refresh": {
+        "default": "mdi:refresh"
+      },
+      "dump_characteristics": {
+        "default": "mdi:bug-outline"
+      }
+    }
+  },
+  "services": {
+    "probe_characteristic": "mdi:bluetooth-settings"
+  }
+}
