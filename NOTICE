@@ -1,0 +1,11 @@
+This integration was written by an AI model (Anthropic Claude Opus 5).
+
+The BLE protocol of the Xiaomi / Viomi Mi Smart Kettle was reverse engineered by
+https://github.com/aprosvetova/xiaomi-kettle - this project reimplements it on top of
+the Home Assistant Bluetooth stack and adds the write path (keep-warm temperature and
+mode, keep-warm time limit, do-not-boil-again).
+
+Other implementations consulted while building this:
+  https://github.com/drndos/mikettle
+  https://github.com/devbis/ble2mqtt
+  https://github.com/Hypfer/Cybele
