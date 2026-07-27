@@ -151,10 +151,13 @@
       "message": "Bluetooth pause is on — turn it off to let Home Assistant access the kettle."
     },
     "not_in_range": {
-      "message": "Kettle {address} is not in range (or it is off its base and not advertising)."
+      "message": "Home Assistant has not heard from kettle {address} recently. An idle kettle advertises only rarely — take it off its base and put it back to wake it up, then try again within a few seconds. If that does not help, the kettle is out of range."
+    },
+    "device_asleep": {
+      "message": "Kettle {address} has not advertised for {seconds} s, so Home Assistant cannot even start a connection. An idle kettle advertises only rarely — take it off its base and put it back to wake it up, then try again within a few seconds. Details: {details}"
     },
     "device_busy": {
-      "message": "Kettle {address} refused the connection — it is most likely busy (is the Xiaomi app connected?) or off its base. Try again in half a minute. Details: {details}"
+      "message": "Kettle {address} refused the connection — another client is most likely connected (the Xiaomi app?). Try again in half a minute. Details: {details}"
     },
     "auth_failed": {
       "message": "Authentication with kettle {address} failed — check the configured model (product ID). Details: {details}"

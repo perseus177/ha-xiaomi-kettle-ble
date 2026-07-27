@@ -17,11 +17,16 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import re
 from dataclasses import dataclass
 
 from bleak.backends.device import BLEDevice
 from bleak.exc import BleakError
-from bleak_retry_connector import BleakClientWithServiceCache, establish_connection
+from bleak_retry_connector import (
+    BleakClientWithServiceCache,
+    BleakOutOfConnectionSlotsError,
+    establish_connection,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -55,13 +60,31 @@ AUTH_TIMEOUT = 10.0
 STATUS_TIMEOUT = 10.0
 TOKEN_LENGTH = 12
 
+# habluetooth reports how stale the device is when it refuses to connect, e.g.
+# "... no connectable devices ... last advertisement 345s ago".
+_LAST_ADVERTISEMENT_RE = re.compile(r"last advertisement\D*(\d+)")
+
 
 class MiKettleError(Exception):
     """Base error for kettle communication."""
 
 
 class MiKettleBusyError(MiKettleError):
-    """The kettle refused the connection (busy, or off its base)."""
+    """The kettle refused the connection (another client is most likely connected)."""
+
+
+class MiKettleAsleepError(MiKettleError):
+    """The kettle has not advertised recently, so no connection can be started.
+
+    An idle kettle advertises only rarely. Home Assistant refuses to even attempt a
+    connection to a device that is not in its recent connectable history, so this is
+    not a busy device - it just has to be woken up.
+    """
+
+    def __init__(self, message: str, seconds: int | None = None) -> None:
+        """Store the age of the last advertisement, when the stack reported one."""
+        super().__init__(message)
+        self.seconds = seconds
 
 
 class MiKettleAuthError(MiKettleError):
@@ -420,9 +443,16 @@ class _Session:
             )
         except (BleakError, asyncio.TimeoutError) as err:
             text = str(err)
+            # An idle kettle advertises only rarely, and on a weak signal Home
+            # Assistant drops it from its connectable history - it then refuses to
+            # even attempt a connection. That is not the same as a busy device, and
+            # the fix is different (wake the kettle up), so report it separately.
+            match = _LAST_ADVERTISEMENT_RE.search(text)
+            if match or isinstance(err, BleakOutOfConnectionSlotsError):
+                seconds = int(match.group(1)) if match else None
+                raise MiKettleAsleepError(text, seconds) from err
             if "connection slot" in text or "Failed to connect" in text:
-                # Usually a phone (the Xiaomi app) holds the single connection, or
-                # the kettle has been taken off its base.
+                # Usually a phone (the Xiaomi app) holds the single connection.
                 raise MiKettleBusyError(text) from err
             raise MiKettleError(text) from err
         self._client = client

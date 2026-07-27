@@ -151,10 +151,13 @@
       "message": "Bluetooth pauza je zapnutá — vypnite ju, ak má Home Assistant ku kanvici pristupovať."
     },
     "not_in_range": {
-      "message": "Kanvica {address} nie je v dosahu (alebo nie je na podstavci a nevysiela)."
+      "message": "Home Assistant sa ku kanvici {address} v poslednom čase nedostal. Nečinná kanvica vysiela len zriedka — zložte ju z podstavca a vráťte späť, tým sa prebudí, a skúste to znova do pár sekúnd. Ak to nepomôže, kanvica je mimo dosahu."
+    },
+    "device_asleep": {
+      "message": "Kanvica {address} {seconds} s nevysielala, takže Home Assistant nedokáže spojenie ani začať. Nečinná kanvica vysiela len zriedka — zložte ju z podstavca a vráťte späť, tým sa prebudí, a skúste to znova do pár sekúnd. Detail: {details}"
     },
     "device_busy": {
-      "message": "Kanvica {address} neprijala spojenie — je pravdepodobne obsadená (je pripojená Xiaomi appka?) alebo nie je na podstavci. Skúste to o pol minúty. Detail: {details}"
+      "message": "Kanvica {address} neprijala spojenie — pravdepodobne je pripojený iný klient (Xiaomi appka?). Skúste to o pol minúty. Detail: {details}"
     },
     "auth_failed": {
       "message": "Autentifikácia s kanvicou {address} zlyhala — skontrolujte nastavený model (product ID). Detail: {details}"

@@ -40,7 +40,9 @@ being sold as "YM-K1501" does **not** imply `v2`.
 - Home Assistant **2026.3** or newer
 - A Bluetooth adapter reachable from Home Assistant, or an ESPHome Bluetooth proxy with
   active connections near the kettle
-- The kettle on its base (off the base it does not advertise and cannot be connected to)
+- The kettle on its base (off the base it does not advertise and cannot be connected to).
+  Note that even *on* its base an idle kettle advertises only rarely — see
+  [Troubleshooting](#troubleshooting).
 
 ## Tested on
 
@@ -109,6 +111,40 @@ field empty only if you will never use the Mi Home app again (see the warning ab
   receiver alongside this integration — for example
   [Passive BLE Monitor](https://github.com/custom-components/ble_monitor). It never
   connects, so it does not compete for the single connection slot.
+
+## Troubleshooting
+
+### "Kettle … has not advertised for N s"
+
+**This is the most common failure, and the kettle usually looks perfectly fine on its base.**
+
+An idle, cooled-down kettle advertises only rarely — minutes can pass between two
+advertisements. Home Assistant refuses to even *attempt* a connection to a device that is
+not in its recent connectable history, so the operation fails before any Bluetooth traffic
+happens. On a weak signal (this was reproduced at **−84 dBm** on the Pi 4's built-in
+adapter) the kettle can disappear from the stack's device list entirely.
+
+Observed on the test setup: the last advertisement arrived at 00:58, an operation at 01:04
+failed with `last advertisement 345s ago`, and the same operation succeeded on the first
+try immediately after the kettle was woken up.
+
+- **Fix now:** take the kettle off its base and put it back (or press its button), then run
+  the operation within a few seconds.
+- **Fix permanently:** put an ESPHome Bluetooth proxy with active connections enabled near
+  the kettle. This does not make the kettle advertise more often, but it raises the signal
+  enough that the advertisements it *does* send are received reliably.
+
+This is not a busy device and not a bug in the integration — the message is separate from
+the "another client is connected" one precisely so the two are not confused.
+
+### "Kettle … refused the connection"
+
+The kettle accepts one GATT connection at a time. Close the Mi Home app (or wait for it to
+disconnect) and try again in half a minute.
+
+### Authentication fails with `ATT 0x0E`
+
+The configured product ID does not match the kettle. See [Supported kettles](#supported-kettles).
 
 ## Diagnostics
 

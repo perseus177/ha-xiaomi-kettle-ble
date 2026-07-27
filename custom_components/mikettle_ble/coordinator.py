@@ -16,6 +16,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import DOMAIN
 from .kettle import (
     KEEP_WARM_TYPE_MAP,
+    MiKettleAsleepError,
     MiKettleAuthError,
     MiKettleBusyError,
     MiKettleClient,
@@ -75,6 +76,16 @@ class MiKettleCoordinator(DataUpdateCoordinator[MiKettleState | None]):
 
     def _as_ha_error(self, err: Exception) -> HomeAssistantError:
         """Translate a protocol error into a user-facing, translatable error."""
+        if isinstance(err, MiKettleAsleepError):
+            return HomeAssistantError(
+                translation_domain=DOMAIN,
+                translation_key="device_asleep",
+                translation_placeholders={
+                    "address": self.address,
+                    "seconds": str(err.seconds) if err.seconds is not None else "?",
+                    "details": str(err),
+                },
+            )
         if isinstance(err, MiKettleBusyError):
             key = "device_busy"
         elif isinstance(err, MiKettleAuthError):
