@@ -26,6 +26,10 @@
           "product_id": "Model (product ID)",
           "token": "Mi Home token (24 hex characters; empty = keep current)"
         }
+      },
+      "unsupported_model": {
+        "title": "Unsupported kettle model",
+        "description": "This kettle is a **{model}**. It uses a different Bluetooth protocol (Xiaomi secure login and MIoT properties instead of the aa0x characteristics), so this integration cannot control it.\n\nUse an integration made for this model instead, for example: {url}\n\nYou can ignore this discovery."
       }
     },
     "error": {
@@ -35,7 +39,8 @@
     "abort": {
       "already_configured": "This kettle is already configured.",
       "not_supported": "This Xiaomi device is not a supported kettle.",
-      "reconfigure_successful": "Reconfiguration was successful."
+      "reconfigure_successful": "Reconfiguration was successful.",
+      "unsupported_model": "{model} is not supported by this integration. Use an integration made for this model instead, for example: {url}"
     }
   },
   "options": {

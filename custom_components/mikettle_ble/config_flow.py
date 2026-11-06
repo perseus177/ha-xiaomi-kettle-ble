@@ -33,7 +33,10 @@ from .const import (
     DEFAULT_POLL_INTERVAL,
     DEFAULT_PRODUCT_ID,
     DOMAIN,
+    KETTLE_PRO_DOMAIN,
+    KETTLE_PRO_URL,
     PRODUCT_IDS,
+    UNSUPPORTED_PRODUCT_IDS,
 )
 from .kettle import TOKEN_LENGTH
 
@@ -43,12 +46,17 @@ MAC_RE = re.compile(r"^([0-9A-F]{2}:){5}[0-9A-F]{2}$")
 MIBEACON_UUID = "0000fe95-0000-1000-8000-00805f9b34fb"
 
 
-def _kettle_product_id(service_info: bluetooth.BluetoothServiceInfoBleak) -> int | None:
-    """Return the product ID if this is a supported kettle, otherwise None."""
+def _mibeacon_product_id(service_info: bluetooth.BluetoothServiceInfoBleak) -> int | None:
+    """Return the MiBeacon product ID from the advertisement, if there is one."""
     data = service_info.service_data.get(MIBEACON_UUID)
     if not data or len(data) < 4:
         return None
-    product_id = int.from_bytes(data[2:4], "little")
+    return int.from_bytes(data[2:4], "little")
+
+
+def _kettle_product_id(service_info: bluetooth.BluetoothServiceInfoBleak) -> int | None:
+    """Return the product ID if this is a supported kettle, otherwise None."""
+    product_id = _mibeacon_product_id(service_info)
     return product_id if product_id in PRODUCT_IDS else None
 
 
@@ -70,6 +78,7 @@ class MiKettleConfigFlow(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialise the flow."""
         self._discovered: tuple[str, int, str | None] | None = None
+        self._unsupported_model: str | None = None
 
     async def async_step_bluetooth(
         self, discovery_info: bluetooth.BluetoothServiceInfoBleak
@@ -80,6 +89,12 @@ class MiKettleConfigFlow(ConfigFlow, domain=DOMAIN):
         decides whether this really is a kettle. If it is not, the flow aborts
         silently and the user is not bothered.
         """
+        raw_product_id = _mibeacon_product_id(discovery_info)
+        if raw_product_id in UNSUPPORTED_PRODUCT_IDS:
+            return await self._async_step_unsupported_discovery(
+                discovery_info, UNSUPPORTED_PRODUCT_IDS[raw_product_id]
+            )
+
         product_id = _kettle_product_id(discovery_info)
         if product_id is None:
             return self.async_abort(reason="not_supported")
@@ -91,6 +106,42 @@ class MiKettleConfigFlow(ConfigFlow, domain=DOMAIN):
         self._discovered = (address, product_id, discovery_info.name)
         self.context["title_placeholders"] = {"name": _title(address)}
         return await self.async_step_bluetooth_confirm()
+
+    async def _async_step_unsupported_discovery(
+        self, discovery_info: bluetooth.BluetoothServiceInfoBleak, model: str
+    ) -> ConfigFlowResult:
+        """Surface a kettle model this integration cannot drive.
+
+        Aborting here would be invisible - an aborted discovery shows nothing - so
+        the flow shows a discovery card that explains which integration to use.
+        A kettle already set up in that integration is left alone.
+        """
+        address = discovery_info.address.upper()
+        if any(
+            entry.unique_id == address
+            for entry in self.hass.config_entries.async_entries(KETTLE_PRO_DOMAIN)
+        ):
+            return self.async_abort(reason="not_supported")
+
+        await self.async_set_unique_id(address)
+        self._abort_if_unique_id_configured()
+
+        self._unsupported_model = model
+        self.context["title_placeholders"] = {"name": _title(address)}
+        return await self.async_step_unsupported_model()
+
+    async def async_step_unsupported_model(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Explain that this kettle needs a different integration."""
+        placeholders = {"model": self._unsupported_model or "", "url": KETTLE_PRO_URL}
+        if user_input is not None:
+            return self.async_abort(
+                reason="unsupported_model", description_placeholders=placeholders
+            )
+        return self.async_show_form(
+            step_id="unsupported_model", description_placeholders=placeholders
+        )
 
     async def async_step_bluetooth_confirm(
         self, user_input: dict[str, Any] | None = None
@@ -224,8 +275,14 @@ class MiKettleConfigFlow(ConfigFlow, domain=DOMAIN):
             if address in current:
                 continue
             product_id = _kettle_product_id(info)
+            raw_product_id = _mibeacon_product_id(info)
             if product_id is not None:
                 label = f"{address} - Mi Kettle, {PRODUCT_IDS[product_id]} ({info.rssi} dBm)"
+            elif raw_product_id in UNSUPPORTED_PRODUCT_IDS:
+                label = (
+                    f"{address} - {UNSUPPORTED_PRODUCT_IDS[raw_product_id]},"
+                    f" NOT supported by this integration ({info.rssi} dBm)"
+                )
             else:
                 label = f"{address} ({info.name or 'unnamed'}, {info.rssi} dBm)"
             rows.append((0 if product_id is not None else 1, address, label))

@@ -24,6 +24,16 @@ PRODUCT_IDS = {
     1116: "yunmi.kettle.v7 (product ID 1116)",
 }
 
+# Kettles that advertise as Xiaomi kettles but speak a different protocol: the Mi
+# Smart Kettle Pro (yunmi.kettle.v14) has no aa0x characteristics and uses the
+# Xiaomi secure login + MIoT-spec properties instead. Discovery does not ignore it
+# silently but points the user to an integration that supports it.
+UNSUPPORTED_PRODUCT_IDS = {
+    0x1A4F: "yunmi.kettle.v14 (Mi Smart Kettle Pro)",
+}
+KETTLE_PRO_DOMAIN = "yunmi_kettle"
+KETTLE_PRO_URL = "https://github.com/kasiom/hass-yunmi-kettle-ble"
+
 # 0 = no periodic polling (recommended - keeps the kettle free for the Xiaomi app)
 DEFAULT_POLL_INTERVAL = 0
 

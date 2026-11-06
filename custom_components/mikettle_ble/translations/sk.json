@@ -26,6 +26,10 @@
           "product_id": "Model (product ID)",
           "token": "Token z Mi Home (24 hex znakov; prázdne = ponechať pôvodný)"
         }
+      },
+      "unsupported_model": {
+        "title": "Nepodporovaný model kanvice",
+        "description": "Táto kanvica je **{model}**. Používa iný Bluetooth protokol (Xiaomi secure login a MIoT vlastnosti namiesto charakteristík aa0x), takže ju táto integrácia ovládať nedokáže.\n\nPoužite integráciu určenú pre tento model, napríklad: {url}\n\nToto nájdené zariadenie môžete ignorovať."
       }
     },
     "error": {
@@ -35,7 +39,8 @@
     "abort": {
       "already_configured": "Táto kanvica je už pridaná.",
       "not_supported": "Toto Xiaomi zariadenie nie je podporovaná kanvica.",
-      "reconfigure_successful": "Nastavenie bolo zmenené."
+      "reconfigure_successful": "Nastavenie bolo zmenené.",
+      "unsupported_model": "{model} táto integrácia nepodporuje. Použite integráciu určenú pre tento model, napríklad: {url}"
     }
   },
   "options": {

@@ -35,6 +35,18 @@ a wrong value fails with `ATT 0x0E (Unlikely Error)`. Take it from the `MODEL:` 
 Xiaomi-cloud-tokens-extractor, or read characteristic `2a24` from the device. Note that
 being sold as "YM-K1501" does **not** imply `v2`.
 
+### Not supported: Mi Smart Kettle Pro (`yunmi.kettle.v14`)
+
+The **Mi Smart Kettle Pro** (MJHWSH02YM, `yunmi.kettle.v14`, product ID `0x1A4F`) is a
+different device on the inside: it has none of the `aa0x` characteristics and speaks the
+Xiaomi secure login with MIoT-spec properties instead of the protocol implemented here.
+Supporting it would mean a second, separate protocol stack, so this integration does not.
+Use an integration written for it, such as
+[kasiom/hass-yunmi-kettle-ble](https://github.com/kasiom/hass-yunmi-kettle-ble)
+(a maintained fork of [opravdin/hass-yunmi-kettle-ble](https://github.com/opravdin/hass-yunmi-kettle-ble)).
+When this integration discovers a Kettle Pro, it shows a discovery card pointing there
+instead of ignoring it silently; you can dismiss it with *Ignore*.
+
 ## Requirements
 
 - Home Assistant **2026.3** or newer
@@ -144,7 +156,7 @@ disconnect) and try again in half a minute.
 
 ### Authentication fails with `ATT 0x0E`
 
-The configured product ID does not match the kettle. See [Supported kettles](#supported-kettles).
+The configured product ID does not match the kettle. See [Supported devices](#supported-devices).
 
 ## Diagnostics
 
