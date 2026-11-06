@@ -14,7 +14,7 @@ from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
     ConfigFlowResult,
-    OptionsFlowWithReload,
+    OptionsFlow,
 )
 from homeassistant.const import CONF_ADDRESS
 from homeassistant.core import callback
@@ -246,12 +246,14 @@ def _is_valid_token(token: str) -> bool:
         return False
 
 
-class MiKettleOptionsFlow(OptionsFlowWithReload):
-    """Options: the polling interval (the base class handles the reload).
+class MiKettleOptionsFlow(OptionsFlow):
+    """Options: the polling interval.
 
-    Note: the BLE pause switch writes the options directly via async_update_entry,
-    so it does not go through this flow and does not trigger a reload - which is
-    exactly what we want.
+    Deliberately a plain OptionsFlow, not OptionsFlowWithReload: Home Assistant
+    refuses to finish an OptionsFlowWithReload when the entry has an update
+    listener (ValueError -> HTTP 500), and this integration needs one for the BLE
+    pause switch. The update listener in __init__.py reloads the entry when the
+    polling interval changes.
     """
 
     async def async_step_init(
@@ -259,7 +261,11 @@ class MiKettleOptionsFlow(OptionsFlowWithReload):
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(data=user_input)
+            # Merge instead of replace: the options also hold the BLE pause flag,
+            # which must survive saving this form.
+            return self.async_create_entry(
+                data={**self.config_entry.options, **user_input}
+            )
 
         return self.async_show_form(
             step_id="init",

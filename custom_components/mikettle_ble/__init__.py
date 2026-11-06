@@ -91,13 +91,18 @@ async def async_unload_entry(hass: HomeAssistant, entry: MiKettleConfigEntry) ->
 
 
 async def _async_update_listener(hass: HomeAssistant, entry: MiKettleConfigEntry) -> None:
-    """Propagate a BLE pause toggle to the coordinator.
+    """React to an options change.
 
-    Nothing is reloaded here on purpose - reloading on an options change is
-    handled by OptionsFlowWithReload. The pause is only a flag; a reload would
+    A new polling interval needs a reload (the coordinator schedule is built at
+    setup). The BLE pause toggle does not: it is only a flag, and a reload would
     needlessly rebuild the entities and cancel any running operation.
     """
-    entry.runtime_data.paused = entry.options.get(CONF_PAUSED, False)
+    coordinator = entry.runtime_data
+    poll_interval = entry.options.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL)
+    if poll_interval != coordinator.poll_interval:
+        hass.config_entries.async_schedule_reload(entry.entry_id)
+        return
+    coordinator.paused = entry.options.get(CONF_PAUSED, False)
 
 
 def _async_register_services(hass: HomeAssistant) -> None:
